@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FormationPro Coach - Assistant IA pour Formateurs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --success: #10b981;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animation de fond */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            animation: bgShift 20s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            animation: slideDown 0.8s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .action-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .action-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+
+        .action-desc {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background: var(--bg-card);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: fadeIn 1s ease-out 0.5s both;
+            border: 1px solid var(--border);
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .api-status {
+            font-size: 0.9em;
+        }
+
+        /* Messages */
+        .messages {
+            height: 500px;
+            overflow-y: auto;
+            padding: 30px;
+            background: var(--bg-main);
+        }
+
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: var(--bg-card);
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: messageSlide 0.4s ease-out;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            margin-left: auto;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 16px;
+            background: var(--bg-card);
+            text-align: left;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .message.assistant .message-content {
+            border: 1px solid var(--border);
+        }
+
+        .message-time {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 15px;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            gap: 6px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .api-key-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: var(--bg-input);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .api-key-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        .api-key-section input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.9em;
+        }
+
+        .api-key-section input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .api-help {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .api-help a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .api-help a:hover {
+            text-decoration: underline;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 15px 20px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        #userInput:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #sendBtn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Welcome message */
+        .welcome-message {
+            background: var(--bg-card);
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .welcome-message h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .welcome-message p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .domains {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .domain-tag {
+            background: var(--bg-input);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .messages {
+                height: 400px;
+            }
+
+            .message-content {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">🎓</div>
+                <div>
+                    <h1>FormationPro Coach</h1>
+                    <p class="subtitle">Votre assistant IA pour l'ingénierie pédagogique</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <div class="action-btn" onclick="insertPrompt('Aide-moi à analyser une commande de formation')">
+                <span class="action-icon">📋</span>
+                <div class="action-title">Analyse de commande</div>
+                <div class="action-desc">Analysez et structurez votre demande de formation</div>
+            </div>
+            <div class="action-btn" onclick="insertPrompt('Comment définir des objectifs pédagogiques efficaces ?')">
+                <span class="action-icon">🎯</span>
+                <div class="action-title">Objectifs pédagogiques</div>
+                <div class="action-desc">Créez des objectifs clairs et mesurables</div>
+            </div>
+            <div class="action-btn" onclick="insertPrompt('Propose-moi un programme de formation sur...')">
+                <span class="action-icon">📚</span>
+                <div class="action-title">Programme de formation</div>
+                <div class="action-desc">Concevez un parcours pédagogique complet</div>
+            </div>
+            <div class="action-btn" onclick="insertPrompt('Quelles méthodes pédagogiques utiliser pour...')">
+                <span class="action-icon">🧠</span>
+                <div class="action-title">Méthodes pédagogiques</div>
+                <div class="action-desc">Découvrez les meilleures approches d'enseignement</div>
+            </div>
+            <div class="action-btn" onclick="insertPrompt('Comment gérer un groupe difficile ?')">
+                <span class="action-icon">👥</span>
+                <div class="action-title">Gestion de groupe</div>
+                <div class="action-desc">Maîtrisez les dynamiques de groupe</div>
+            </div>
+            <div class="action-btn" onclick="insertPrompt('Aide-moi à créer une grille d\\'évaluation')">
+                <span class="action-icon">✅</span>
+                <div class="action-title">Évaluation</div>
+                <div class="action-desc">Évaluez efficacement vos apprenants</div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="status">
+                    <span class="status-dot"></span>
+                    <span class="api-status" id="apiStatus">En attente de la clé API</span>
+                </div>
+                <button onclick="clearChat()" style="background: rgba(255,255,255,0.2); border: none; padding: 8px 16px; border-radius: 8px; color: white; cursor: pointer;">Effacer 🗑️</button>
+            </div>
+
+            <div class="messages" id="messages">
+                <div class="welcome-message">
+                    <h3>👋 Bienvenue sur FormationPro Coach !</h3>
+                    <p>Je suis votre assistant IA spécialisé en ingénierie pédagogique et formation professionnelle.</p>
+                    <p>Je peux vous aider sur :</p>
+                    <div class="domains">
+                        <span class="domain-tag">📋 Analyse de commande</span>
+                        <span class="domain-tag">🎯 Objectifs pédagogiques</span>
+                        <span class="domain-tag">📚 Programmes de formation</span>
+                        <span class="domain-tag">🧠 Méthodes pédagogiques</span>
+                        <span class="domain-tag">👥 Gestion de groupe</span>
+                        <span class="domain-tag">✅ Évaluation</span>
+                        <span class="domain-tag">🎓 Ingénierie pédagogique</span>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 0.9em;">👇 Configurez votre clé API ci-dessous pour commencer</p>
+                </div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <div class="api-key-section">
+                    <label for="apiKey">🔑 Clé API Anthropic (Claude)</label>
+                    <input 
+                        type="password" 
+                        id="apiKey" 
+                        placeholder="sk-ant-api03-xxxxx"
+                        onchange="saveApiKey()"
+                    >
+                    <div class="api-help">
+                        💡 Obtenez votre clé API sur <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a>
+                        - Elle sera sauvegardée localement dans votre navigateur
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Posez votre question sur la formation professionnelle..."
+                        onkeypress="if(event.key === 'Enter') sendMessage()"
+                    >
+                    <button id="sendBtn" onclick="sendMessage()">
+                        <span>Envoyer</span>
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Système de sauvegarde de la clé API
+        function saveApiKey() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey) {
+                localStorage.setItem('formationpro_api_key', apiKey);
+                updateApiStatus(true);
+            }
+        }
+
+        function loadApiKey() {
+            const savedKey = localStorage.getItem('formationpro_api_key');
+            if (savedKey) {
+                document.getElementById('apiKey').value = savedKey;
+                updateApiStatus(true);
+            }
+        }
+
+        function updateApiStatus(connected) {
+            const statusEl = document.getElementById('apiStatus');
+            if (connected) {
+                statusEl.textContent = 'API connectée ✓';
+            } else {
+                statusEl.textContent = 'En attente de la clé API';
+            }
+        }
+
+        // Charger la clé API au démarrage
+        loadApiKey();
+
+        // Système de messages
+        let conversationHistory = [];
+
+        function insertPrompt(text) {
+            document.getElementById('userInput').value = text;
+            document.getElementById('userInput').focus();
+        }
+
+        function addMessage(content, isUser = false) {
+            const messagesDiv = document.getElementById('messages');
+            const welcomeMsg = messagesDiv.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            
+            const now = new Date();
+            const time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-content">${content}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').classList.add('active');
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').classList.remove('active');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            const apiKey = document.getElementById('apiKey').value;
+
+            if (!message) return;
+            
+            if (!apiKey) {
+                alert('⚠️ Veuillez d\'abord configurer votre clé API Anthropic');
+                return;
+            }
+
+            // Désactiver l'envoi pendant le traitement
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.disabled = true;
+            input.value = '';
+
+            // Ajouter le message de l'utilisateur
+            addMessage(message, true);
+            conversationHistory.push({
+                role: 'user',
+                content: message
+            });
+
+            // Afficher l'indicateur de frappe
+            showTypingIndicator();
+
+            try {
+                // Préparer le prompt système spécialisé
+                const systemPrompt = `Tu es FormationPro Coach, un assistant IA expert en ingénierie pédagogique et formation professionnelle d'adultes.
+
+Tes domaines d'expertise incluent :
+- Analyse de commandes de formation
+- Définition d'objectifs pédagogiques (taxonomie de Bloom, SMART)
+- Conception de programmes de formation
+- Méthodes pédagogiques actives (brainstorming, études de cas, jeux de rôle, etc.)
+- Gestion de groupe et dynamiques
+- Évaluation et suivi des apprenants
+- Ingénierie pédagogique et design instructionnel
+
+Réponds de manière :
+- Professionnelle et structurée
+- Pratique avec des exemples concrets
+- Adaptée au contexte de la formation professionnelle d'adultes
+- En français
+- Avec des conseils actionnables
+
+Utilise des émojis de manière modérée pour améliorer la lisibilité.`;
+
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 4000,
+                        system: systemPrompt,
+                        messages: conversationHistory
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Erreur API');
+                }
+
+                const data = await response.json();
+                const assistantMessage = data.content[0].text;
+
+                // Ajouter la réponse à l'historique
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: assistantMessage
+                });
+
+                hideTypingIndicator();
+                
+                // Afficher la réponse avec formatage markdown basique
+                const formattedMessage = formatMessage(assistantMessage);
+                addMessage(formattedMessage, false);
+
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage(`❌ Erreur : ${error.message}. Vérifiez votre clé API et votre connexion internet.`, false);
+                console.error('Erreur:', error);
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function formatMessage(text) {
+            // Formatage basique markdown
+            return text
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function clearChat() {
+            if (confirm('Voulez-vous vraiment effacer toute la conversation ?')) {
+                const messagesDiv = document.getElementById('messages');
+                messagesDiv.innerHTML = `
+                    <div class="welcome-message">
+                        <h3>👋 Conversation effacée</h3>
+                        <p>Posez votre première question pour commencer une nouvelle conversation.</p>
+                    </div>
+                    <div class="typing-indicator" id="typingIndicator">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                conversationHistory = [];
+            }
+        }
+
+        // Focus automatique sur l'input au chargement
+        window.addEventListener('load', () => {
+            document.getElementById('userInput').focus();
+        });
+    </script>
+</body>
+</html>
